@@ -1,0 +1,11 @@
+{
+    "platform": "android,ios",
+    "debug": 0,
+    "valid": 1,
+    "reboot": 2,
+    "reboot_info": {
+        "title": "温馨提示",
+        "message": "已为您更新至最新版本"
+    },
+    "clear_cache": 0
+}

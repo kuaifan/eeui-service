@@ -1,0 +1,9 @@
+{
+    "appkey": "test",
+    "welcome_image": "",
+    "welcome_wait": 2000,
+    "welcome_skip": 1,
+    "welcome_jump": "",
+    "welcome_limit_s": 0,
+    "welcome_limit_e": 0
+}
