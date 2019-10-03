@@ -1,6 +1,6 @@
 {
     "appkey": "test",
-    "welcome_image": "",
+    "welcome_image": "welcome.png",
     "welcome_wait": 2000,
     "welcome_skip": 1,
     "welcome_jump": "",

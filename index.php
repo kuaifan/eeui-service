@@ -67,6 +67,53 @@ function url($path = null)
 }
 
 /**
+ * @param $srcurl
+ * @param string $baseurl
+ * @return mixed|string
+ */
+function formatUrl($srcurl, $baseurl = '')
+{
+    if (empty($srcurl)) {
+        return "";
+    }
+    if (empty($baseurl)) {
+        $baseurl = url('');
+    }
+    $srcinfo = parse_url($srcurl);
+    if (isset($srcinfo['scheme'])) {
+        return $srcurl;
+    }
+    $baseinfo = parse_url($baseurl);
+    $url = $baseinfo['scheme'] . '://' . $baseinfo['host'];
+    if (substr($srcinfo['path'], 0, 1) == '/') {
+        $path = $srcinfo['path'];
+    } else {
+        $path = dirname($baseinfo['path']) . '/' . $srcinfo['path'];
+    }
+    $rst = [];
+    $path_array = explode('/', $path);
+    if (!$path_array[0]) {
+        $rst[] = '';
+    }
+    foreach ($path_array AS $key => $dir) {
+        if ($dir == '..') {
+            if (end($rst) == '..') {
+                $rst[] = '..';
+            } elseif (!array_pop($rst)) {
+                $rst[] = '..';
+            }
+        } elseif ($dir && $dir != '.') {
+            $rst[] = $dir;
+        }
+    }
+    if (!end($path_array)) {
+        $rst[] = '';
+    }
+    $url .= implode('/', $rst);
+    return str_replace('\\', '/', $url);
+}
+
+/**
  * @return array|mixed
  */
 function getConfig()
@@ -77,10 +124,10 @@ function getConfig()
         $array = json_decode(file_get_contents($file), true);
     }
     $array['appkey'] = value($array, 'appkey', 'test');
-    $array['welcome_image'] = value($array, 'welcome_image', '');
+    $array['welcome_image'] = formatUrl(value($array, 'welcome_image', ''));
     $array['welcome_wait'] = intval(value($array, 'welcome_wait', 2000));
     $array['welcome_skip'] = intval(value($array, 'welcome_skip', 1));
-    $array['welcome_jump'] = value($array, 'welcome_jump', '');
+    $array['welcome_jump'] = formatUrl(value($array, 'welcome_jump', ''));
     $array['welcome_limit_s'] = intval(value($array, 'welcome_limit_s', 0));
     $array['welcome_limit_e'] = intval(value($array, 'welcome_limit_e', 0));
     return $array;
@@ -123,6 +170,24 @@ function getJson($file)
 }
 
 /**
+ * @param $str
+ * @return mixed
+ */
+function idEncode($str) {
+    $str = str_replace('/', '--2-2f-f--', $str);
+    return $str;
+}
+
+/**
+ * @param $str
+ * @return mixed
+ */
+function idDecode($str) {
+    $str = str_replace('--2-2f-f--', '/', $str);
+    return $str;
+}
+
+/**
  * @param $version
  * @param $platform
  * @param $debug
@@ -152,7 +217,7 @@ function getUplists($version, $platform, $debug)
         $fileName = basename($file);
         $filePath = $dir . $fileName;
         $uplists[] = [
-            'id' => base64_encode(substr($filePath, 0, strlen($filePath) - 4)),
+            'id' => idEncode(substr($filePath, 0, strlen($filePath) - 4)),
             'size' => sprintf("%.2f", filesize($file) / 1024),
             'path' => url($filePath),
             'valid' => $jsonArray['valid'],
@@ -203,12 +268,12 @@ function success($msg, $data = [], $ret = 1)
 /** ************************************************************************************************/
 /** ************************************************************************************************/
 
-$act = input('act', 'update-lists');
+$act = input('act', 'app');
 
 switch ($act) {
     case "update-success":
         {
-            $id = base64_decode(input('id'));
+            $id = idDecode(input('id'));
             $path = $file = __DIR__ . '/' . $id . '.success.log';
             file_put_contents($path, date("Y-m-d H:i:s") . "\n", FILE_APPEND);
             success('success');
@@ -217,14 +282,14 @@ switch ($act) {
 
     case "update-delete":
         {
-            $id = base64_decode(input('id'));
+            $id = idDecode(input('id'));
             $path = $file = __DIR__ . '/' . $id . '.delete.log';
             file_put_contents($path, date("Y-m-d H:i:s") . "\n", FILE_APPEND);
             success('success');
             break;
         }
 
-    case "update-lists":
+    case "app":
         {
             $appkey = input('appkey');
             $package = input('package');
