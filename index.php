@@ -77,7 +77,7 @@ function formatUrl($srcurl, $baseurl = '')
         return "";
     }
     if (empty($baseurl)) {
-        $baseurl = url('');
+        $baseurl = url('index.php');
     }
     $srcinfo = parse_url($srcurl);
     if (isset($srcinfo['scheme'])) {
